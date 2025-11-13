@@ -53,14 +53,11 @@ The first part `t·cos(theta)` and `t·sin(theta)` represents linear growth in a
 Since the curve is basically moving in direction `[cos(theta), sin(theta)]` with some wiggles, I used PCA to find this main direction.
 
 ```python
-# Center the data
 XY = np.vstack([x, y]).T
 XYc = XY - XY.mean(axis=0)
-
-# Find principal component
 pca = PCA(n_components=1)
 pca.fit(XYc)
-u = pca.components_[0]  # Main direction vector
+u = pca.components_[0]
 ```
 
 PCA finds the direction where the data spreads the most. For our curve, this captures the general flow direction as t increases.
@@ -70,7 +67,7 @@ PCA finds the direction where the data spreads the most. For our curve, this cap
 Once I know the main direction, I can estimate where each point falls along that direction:
 
 ```python
-s = XYc.dot(u)  # Project points onto main direction
+s = XYc.dot(u)
 # Scale to [6, 60]
 t = ((60 - 6) / (s.max() - s.min())) * s + offset
 ```
@@ -131,7 +128,7 @@ error_y ∝ +sin(0.3t)·cos(theta)
 The residual vector is perpendicular to the curve's direction. Taking the perpendicular (ry, -rx) gives the curve direction:
 
 ```python
-idx = np.abs(np.sin(0.3 * t)) > 0.5  # Where oscillations are strong
+idx = np.abs(np.sin(0.3 * t)) > 0.5
 angles = np.arctan2(ry[idx], -rx[idx])
 # Use circular mean to average angles properly
 theta_ref = np.angle(np.mean(np.exp(1j * angles)))
@@ -207,7 +204,7 @@ The residuals show a smooth oscillating pattern rather than random noise. This i
 The parametric equations have a dominant linear term `t·[cos(theta), sin(theta)]` that makes the curve elongated in one direction. PCA automatically finds this direction. Projecting points onto it gives their approximate position along the curve, which correlates with t.
 
 ### Residual Analysis for M
-When you fit with M=0 but the real M≠0, the residuals show exponential growth/decay. The peaks of these residuals follow `e^(Mt)`, so fitting `log(peak) vs t` recovers M.
+When you fit with M=0 but the real M!=0, the residuals show exponential growth/decay. The peaks of these residuals follow `e^(Mt)`, so fitting `log(peak) vs t` recovers M.
 
 ### Smart Initialization
 Instead of trying millions of random parameter combinations, each step uses mathematical insight to narrow down the possibilities. This makes the optimization fast and reliable.
@@ -230,7 +227,7 @@ Instead of trying millions of random parameter combinations, each step uses math
 
 ```bash
 pip install numpy pandas scikit-learn scipy matplotlib
-python curve_fitting_solution.py
+python v1.py
 ```
 
 **Output:**
@@ -246,9 +243,9 @@ Validation L1 distance (per point): 0.0378
 
 ## Key Takeaways
 
-1. **Decompose the problem** - The parametric equations have a simple linear part + complex oscillating part. Tackle them separately.
+1. **Decompose the problem** - The parametric equations have a simple linear part + complex oscillating part. Tackling them seperately helped me start from a good estimate.
 
-2. **Use domain knowledge** - PCA isn't just for dimensionality reduction. Here it solves the t-correspondence problem by finding the curve's main direction.
+2. **Using domain knowledge** - PCA isn't just for dimensionality reduction. Here it solves the t-correspondence problem by finding the curve's main direction.
 
 3. **Smart initialization matters** - Good starting guesses make optimization fast and reliable. Random search would take much longer and might miss the global optimum.
 
